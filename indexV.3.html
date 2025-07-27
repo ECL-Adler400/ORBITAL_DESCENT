@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orbital Descent - Retro Sci-Fi Adventure</title>
+    <style>
+        /* Analog Sci-Fi Theme */
+        @font-face {
+            font-family: 'VT323';
+            src: url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        }
+        
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+        
+        @keyframes flicker {
+            0% { opacity: 0.97; }
+            5% { opacity: 0.9; }
+            10% { opacity: 0.97; }
+            15% { opacity: 1; }
+            50% { opacity: 0.94; }
+            80% { opacity: 0.98; }
+            95% { opacity: 0.9; }
+            100% { opacity: 0.96; }
+        }
+        
+        @keyframes typewriter {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        
+        @keyframes blink-cursor {
+            from, to { border-right-color: transparent; }
+            50% { border-right-color: #66ff66; }
+        }
+        
+        @keyframes glow {
+            0% { text-shadow: 0 0 5px #66ff66, 0 0 10px #66ff66; }
+            50% { text-shadow: 0 0 10px #66ff66, 0 0 20px #66ff66; }
+            100% { text-shadow: 0 0 5px #66ff66, 0 0 10px #66ff66; }
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #000000;
+            color: #66ff66;
+            font-family: 'VT323', 'Courier New', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+            background-image: url('YOUR_SPACESHIP_IMAGE_URL_HERE');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            line-height: 1.5;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: -1;
+        }
+        
+        /* CRT Effect */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: rgba(102, 255, 102, 0.1);
+            z-index: 100;
+            animation: scanline 6s linear infinite;
+            pointer-events: none;
+        }
+        
+        .crt-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        #game-container {
+            width: 90%;
+            max-width: 800px;
+            background-color: rgba(0, 20, 0, 0.75);
+            border-radius: 0;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(102, 255, 102, 0.5);
+            z-index: 5;
+            border: 2px solid #66ff66;
+            position: relative;
+            animation: flicker 4s infinite;
+        }
+        
+        #game-container::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 1px dashed #66ff66;
+            pointer-events: none;
+        }
+        
+        #title {
+            text-align: center;
+            color: #66ff66;
+            margin-bottom: 30px;
+            font-size: 3em;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            animation: glow 2s infinite;
+        }
+        
+        #screen-container {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Main Menu Screen */
+        #main-menu {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        #main-menu h2 {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .menu-button {
+            background-color: #001400;
+            color: #66ff66;
+            border: 2px solid #66ff66;
+            padding: 12px 30px;
+            margin: 10px 0;
+            font-family: 'VT323', 'Courier New', monospace;
+            font-size: 1.4em;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 250px;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+        }
+        
+        .menu-button:hover {
+            background-color: #003300;
+            transform: scale(1.05);
+        }
+        
+        .menu-button:active {
+            transform: scale(0.98);
+        }
+        
+        .menu-button::before {
+            content: '> ';
+        }
+        
+        /* Navigation Buttons */
+        .nav-button {
+            background-color: #001400;
+            color: #ffcc00;
+            border: 1px solid #ffcc00;
+            padding: 8px 15px;
+            font-family: 'VT323', 'Courier New', monospace;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+        
+        .nav-button:hover {
+            background-color: #332200;
+            transform: scale(1.05);
+        }
+        
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .back-button::before {
+            content: '< ';
+        }
+        
+        /* Navigation Controls */
+        #nav-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        #story-back {
+            margin-right: auto;
+        }
+        
+        #main-menu-btn {
+            margin-left: auto;
+        }
+        
+        /* System Info */
+        #system-info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.8em;
+            text-align: right;
+            color: #888;
+        }
+        
+        /* Backstory Screen */
+        #backstory {
+            display: none;
+            padding: 15px;
+            border: 1px solid #66ff66;
+            background-color: #000800;
+            height: 350px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            text-align: left;
+            position: relative;
+        }
+        
+        #backstory::before {
+            content: 'MISSION BRIEFING';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background-color: #000800;
+            padding: 0 10px;
+            font-size: 0.9em;
+        }
+        
+        #backstory p {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .date-line {
+            color: #ffcc00;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .classified {
+            color: #ff6666;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        /* Game Screen */
+        #game-screen {
+            display: none;
+            position: relative;
+        }
+        
+        #story-text {
+            font-size: 1.2em;
+            min-height: 200px;
+            background-color: rgba(0, 15, 0, 0.5);
+            padding: 20px;
+            border: 1px solid #66ff66;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        #story-text::before {
+            content: 'TERMINAL OUTPUT';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background-color: #001400;
+            padding: 0 10px;
+            font-size: 0.9em;
+        }
+        
+        #choices {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .choice-btn {
+            padding: 12px 15px;
+            background-color: #001400;
+            color: #66ff66;
+            border: 1px solid #66ff66;
+            font-family: 'VT323', 'Courier New', monospace;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            position: relative;
+            text-align: left;
+        }
+        
+        .choice-btn:hover {
+            background-color: #003300;
+        }
+        
+        .choice-btn::before {
+            content: '> ';
+            color: #ffcc00;
+        }
+        
+        #status-bar {
+            position: relative;
+            height: 30px;
+            border: 1px solid #66ff66;
+            margin-top: 20px;
+            padding: 5px 10px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+        }
+        
+        #timer {
+            color: #ffcc00;
+        }
+        
+        #status-text {
+            color: #66ff66;
+        }
+        
+        #navigation-btn {
+            display: none;
+            padding: 12px 25px;
+            background-color: #001400;
+            color: #66ff66;
+            border: 1px solid #66ff66;
+            font-family: 'VT323', 'Courier New', monospace;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin: 20px auto;
+            transition: background-color 0.3s;
+        }
+        
+        #navigation-btn:hover {
+            background-color: #003300;
+        }
+        
+        /* Responsiveness */
+        @media (max-width: 768px) {
+            #game-container {
+                width: 95%;
+                padding: 20px 15px;
+            }
+            
+            #title {
+                font-size: 2.2em;
+            }
+            
+            .menu-button {
+                width: 200px;
+                padding: 10px 20px;
+            }
+            
+            #backstory {
+                height: 300px;
+            }
+            
+            .nav-button {
+                padding: 5px 10px;
+                font-size: 0.9em;
+            }
+        }
+        
+        /* Blinking cursor for typewriter effect */
+        .typewriter {
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 0.15em solid #66ff66;
+            margin: 0 auto;
+            animation: 
+                typewriter 4s steps(40, end),
+                blink-cursor 0.75s step-end infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="crt-effect"></div>
+    <div id="game-container">
+        <h1 id="title">ORBITAL DESCENT</h1>
+        
+        <!-- System Info Bar -->
+        <div id="system-info">
+            DATE: 2025-07-27 08:42:12 UTC<br>
+            USER: ECL-Adler400
+        </div>
+        
+        <div id="screen-container">
+            <!-- Main Menu Screen -->
+            <div id="main-menu">
+                <h2 class="typewriter">INITIATING EMERGENCY PROTOCOL...</h2>
+                <button id="start-btn" class="menu-button">START MISSION</button>
+                <button id="backstory-btn" class="menu-button">MISSION BRIEFING</button>
+            </div>
+            
+            <!-- Backstory Screen -->
+            <div id="backstory">
+                <button id="backstory-back" class="nav-button back-button">BACK</button>
+                <p class="date-line">DATE: JULY 27, 2025</p>
+                <p class="classified">SECURITY LEVEL: ALPHA-7 CLEARANCE REQUIRED</p>
+                <p>Hey diary, this is my first entry as Junior Engineer aboard Orbital Station Alpha. Two weeks into my first assignment after graduating from the Academy and I still can't believe I made it. The view of Earth from up here is absolutely insane - like all those pictures you see but WAY more intense.</p>
+                
+                <p>Station Alpha is like this massive structure orbiting 320 km above Earth. It's got three research modules, two habitation rings, and a central command hub. There's about 200 people on board, mostly scientists and engineers. The station was built back in 2018 as this international collaboration, but now it's managed by the Global Space Initiative (GSI).</p>
+                
+                <p>My job is pretty basic - monitoring power systems in Sector 7, running diagnostics, and doing whatever the senior engineers tell me to do. I'm on rotation with Chief Engineer Patel, who's actually super cool and knows literally EVERYTHING about the station's systems.</p>
+                
+                <p>Dr. Zhang in the research lab is working on some top-secret gravitational manipulation experiment that everyone keeps whispering about. I don't have the clearance to know details, but rumors say it could revolutionize space travel if it works. The prototype equipment takes up half of Research Module 2.</p>
+                
+                <p>Captain Reyes runs a tight ship. She's been in command for 3 years and has this reputation for being strict but fair. Lieutenant Chen handles security and escape pod protocols - he caught me trying to peek at the pod systems last week and gave me this whole lecture about emergency protocols.</p>
+                
+                <p>I've heard the orbital adjustments have been more frequent lately. Something about increased debris in our orbital path from that satellite collision last month. The engineers don't seem worried though.</p>
+                
+                <p class="date-line">UPDATE - JULY 27, 2025 - 08:15 UTC</p>
+                <p>Just felt a weird shudder through the station during breakfast. The lights flickered for a second but came back on. Probably nothing. Heading to my shift now.</p>
+                
+                <p class="classified">WARNING: EMERGENCY ALERT INITIALIZED - 08:30 UTC</p>
+            </div>
+            
+            <!-- Game Screen -->
+            <div id="game-screen">
+                <div id="nav-controls">
+                    <button id="story-back" class="nav-button back-button" disabled>BACK</button>
+                    <button id="main-menu-btn" class="nav-button">MAIN MENU</button>
+                </div>
+                <div id="story-text"></div>
+                <div id="choices"></div>
+                <div id="status-bar">
+                    <div id="timer">TIME REMAINING: --:--</div>
+                    <div id="status-text">STATUS: ONLINE</div>
+                </div>
+                <button id="navigation-btn"></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const mainMenu = document.getElementById('main-menu');
+        const backstorySection = document.getElementById('backstory');
+        const gameScreen = document.getElementById('game-screen');
+        const startBtn = document.getElementById('start-btn');
+        const backstoryBtn = document.getElementById('backstory-btn');
+        const navigationBtn = document.getElementById('navigation-btn');
+        const storyText = document.getElementById('story-text');
+        const choicesDiv = document.getElementById('choices');
+        const timerDisplay = document.getElementById('timer');
+        const statusText = document.getElementById('status-text');
+        const backstoryBackBtn = document.getElementById('backstory-back');
+        const mainMenuBtn = document.getElementById('main-menu-btn');
+        const storyBackBtn = document.getElementById('story-back');
+        
+        // Game history for navigation
+        let gameHistory = [];
+        let currentNode = 'start';
+        
+        // Timer variables
+        let timeRemaining = 900; // 15 minutes in seconds
+        let timerInterval;
+        
+        // Audio effects (can be implemented)
+        const playBeep = () => {
+            // Add audio beep functionality if desired
+        };
+        
+        // Back button handlers
+        backstoryBackBtn.addEventListener('click', () => {
+            playBeep();
+            showMainMenu();
+        });
+        
+        mainMenuBtn.addEventListener('click', () => {
+            playBeep();
+            // Show a confirmation prompt before returning to main menu
+            if (confirm("WARNING: Returning to main menu will reset your current progress. Continue?")) {
+                showMainMenu();
+                clearInterval(timerInterval);
+            }
+        });
+        
+        storyBackBtn.addEventListener('click', () => {
+            playBeep();
+            goBackInStory();
+        });
+        
+        // Screen navigation
+        startBtn.addEventListener('click', () => {
+            playBeep();
+            showGameScreen();
+            startGame();
+            startTimer();
+        });
+        
+        backstoryBtn.addEventListener('click', () => {
+            playBeep();
+            mainMenu.style.display = 'none';
+            backstorySection.style.display = 'block';
+        });
+        
+        function showMainMenu() {
+            playBeep();
+            mainMenu.style.display = 'flex';
+            backstorySection.style.display = 'none';
+            gameScreen.style.display = 'none';
+            navigationBtn.style.display = 'none';
+            clearInterval(timerInterval);
+            gameHistory = [];
+        }
+        
+        function showGameScreen() {
+            playBeep();
+            mainMenu.style.display = 'none';
+            backstorySection.style.display = 'none';
+            gameScreen.style.display = 'block';
+            navigationBtn.style.display = 'none';
+        }
+        
+        function startTimer() {
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+                
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    // Could trigger a "time's up" scenario
+                }
+            }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            timerDisplay.textContent = `TIME REMAINING: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeRemaining <= 180) { // 3 minutes left
+                timerDisplay.style.color = '#ff6666';
+            }
+        }
+        
+        function goBackInStory() {
+            if (gameHistory.length > 0) {
+                // Remove the current node
+                gameHistory.pop();
+                
+                if (gameHistory.length > 0) {
+                    // Go to the previous node
+                    const previousNode = gameHistory[gameHistory.length - 1];
+                    currentNode = previousNode;
+                    showNode(previousNode, false); // Don't add to history when going back
+                } else {
+                    // If history is empty, go back to start
+                    currentNode = 'start';
+                    showNode('start', false);
+                    storyBackBtn.disabled = true;
+                }
+            }
+        }
+
+        // Define the story nodes (revised writing style for high schooler)
+        const storyNodes = {
+            start: {
+                text: "You wake up with a crazy jolt as these super loud emergency sirens blast through the station. The red warning lights are flashing everywhere, making your quarters look like some kind of disco from hell. The AI's robotic voice cuts through: \"WARNING: CRITICAL SYSTEMS FAILURE. STATION ORBIT DEGRADING. ESTIMATED TIME TO ATMOSPHERIC ENTRY: 15 MINUTES.\" Your heart is pounding like crazy. What do you do?",
+                choices: [
+                    { text: "Run to the command center to find out what's happening", nextNode: "commandCenter" },
+                    { text: "Head straight to the escape pods because that's the smart move", nextNode: "escapePods" },
+                    { text: "Check your personal terminal for information first", nextNode: "terminal" }
+                ]
+            },
+            
+            commandCenter: {
+                text: "The command center is total chaos! Officers are like, running between stations and shouting over each other as damage reports flood in on all the monitors. Captain Reyes spots you and literally looks relieved. \"Thank god you're here! The orbital stabilizers are completely failing and we're losing altitude fast. We need someone to manually reset the auxiliary power module while we work on the main systems. The gravitational compensators are already offline!\"",
+                choices: [
+                    { text: "Volunteer to reset the auxiliary power", nextNode: "auxiliaryPower" },
+                    { text: "Suggest evacuating to the escape pods instead", nextNode: "suggestEvacuation" }
+                ]
+            },
+            
+            escapePods: {
+                text: "You race down the corridors to the escape pod bay. You can feel the station shudder as it descends. When you get there, three of the five pods have already launched - gone! As you approach the remaining pods, Lieutenant Chen blocks your path with this super serious face. \"We're saving the remaining pods for essential personnel and critical research data. Return to your station or help with repairs before we all die!\"",
+                choices: [
+                    { text: "Argue that your life is just as valuable as anyone else's", nextNode: "podArgument" },
+                    { text: "Fine, I'll help with repairs, whatever", nextNode: "offerHelp" },
+                    { text: "Wait for Chen to get distracted and sneak into a pod", nextNode: "sneakPod" }
+                ]
+            },
+            
+            terminal: {
+                text: "You quickly access your terminal. The screen flickers as the backup power kicks in. The damage assessment shows the station was hit by some kind of orbital debris, totally wrecking the propulsion systems. There's a message from Dr. Zhang in the research lab that keeps flashing URGENT: \"Need immediate assistance protecting vital experimental data. Could be key to saving the station. Please help!!!\"",
+                choices: [
+                    { text: "Go help Dr. Zhang in the lab", nextNode: "researchLab" },
+                    { text: "Ignore that and head to the escape pods", nextNode: "escapePods" }
+                ]
+            },
+            
+            auxiliaryPower: {
+                text: "You navigate through these super unstable corridors to reach the auxiliary power core. The whole place is filling with smoke from an electrical fire, making it hard to breathe. The reset panel is on the far wall, but there's all this debris blocking your path. The station shudders violently and you almost fall over. Whatever hit us must have been massive!",
+                choices: [
+                    { text: "Brave the flames to reach the panel - it's our only chance!", nextNode: "braveFlames" },
+                    { text: "Look for fire suppression equipment first so I don't die", nextNode: "fireSuppress" }
+                ]
+            },
+            
+            suggestEvacuation: {
+                text: "\"We can't abandon ship yet,\" Captain Reyes says with this intense look on her face. \"If we can stabilize the orbit, we save everyone. If we panic and flee, most won't make it to the surface. The pods aren't designed for full evacuation!\" Another officer shouts that the atmospheric shields are failing on Deck C, and you can hear the hull groaning under pressure.",
+                choices: [
+                    { text: "OK I'll help with repairs - you're right", nextNode: "auxiliaryPower" },
+                    { text: "Slip away toward the escape pods anyway", nextNode: "sneakAway" }
+                ]
+            },
+            
+            podArgument: {
+                text: "You start arguing with Chen, and it gets heated fast. \"I have just as much right to survive as anyone else!\" More crew members arrive at the escape pod bay, and everyone's freaking out. The situation gets super tense until Chief Security Officer Diaz steps in. \"We need every able body to help save this station. No one uses the pods until all options are exhausted. That's an order!\"",
+                choices: [
+                    { text: "Fine, I'll help, but I'm not happy about it", nextNode: "offerHelp" },
+                    { text: "Try to push past them and force your way to a pod", nextNode: "forcePod" }
+                ]
+            },
+            
+            offerHelp: {
+                text: "\"Engineering needs hands in Sector 7 to seal a breach,\" says Chen, looking relieved that you're not going to fight him on this. \"Or the research lab needs help securing their data cores. Your call, but make it quick. The structural integrity field is already at 63% and dropping.\"",
+                choices: [
+                    { text: "Head to Engineering in Sector 7", nextNode: "engineering" },
+                    { text: "Go to the research lab", nextNode: "researchLab" }
+                ]
+            },
+            
+            sneakPod: {
+                text: "You wait until Chen gets this urgent call on his comm unit. The second he turns away, you slip past toward Pod 4. Your heart's racing as you quickly start the launch sequence, hands shaking on the controls. Suddenly alarms blare, and the pod door automatically seals behind you. The launch sequence initiates, and you're ejected into space alone as the station continues its death spiral above you.",
+                choices: [
+                    { text: "Try to pilot toward the nearest outpost", nextNode: "pilotPod" },
+                    { text: "Send distress signals while descending to Earth", nextNode: "distressSignal" }
+                ]
+            },
+            
+            researchLab: {
+                text: "You find Dr. Zhang frantically copying data when you arrive. Lab equipment is scattered everywhere from the impact. \"This research contains groundbreaking discoveries in gravitational manipulation,\" she explains, typing like crazy. \"If we can transfer it to the station's mainframe, we might be able to create a counterthrust field using the prototype in Lab 2. But I need help connecting to the central computer node!\"",
+                choices: [
+                    { text: "Help connect the data to the main systems", nextNode: "connectData" },
+                    { text: "Suggest taking the data to an escape pod instead", nextNode: "saveData" }
+                ]
+            },
+            
+            braveFlames: {
+                text: "You cover your face with your sleeve and push through the smoke and sparks. Your uniform gets singed, and you feel the heat against your skin. With a final lunge, you reach the panel and initiate the reset sequence. The system whirs to life as power surges through the station. The comms crackle: \"Auxiliary power restored! OMG we're regaining control of the stabilizers!\"",
+                choices: [
+                    { text: "Return to the command center", nextNode: "heroReturn" }
+                ]
+            },
+            
+            fireSuppress: {
+                text: "You locate a fire suppression unit nearby and activate it, clearing a safer path through the flames. Smart move, but it takes precious minutes. By the time you reach the panel and reset the power, the station has descended even further into the atmosphere, making stabilization way harder. Every second counts in a crisis like this!",
+                choices: [
+                    { text: "Return to the command center", nextNode: "latePower" }
+                ]
+            },
+            
+            sneakAway: {
+                text: "You slip out during the commotion, making your way toward the escape pods. The corridors become increasingly unstable, with panels falling from the ceiling. Suddenly, there's this massive explosive decompression in an adjacent section, and emergency bulkheads slam down, cutting off your route. You're trapped in a rapidly deteriorating section with warning lights flashing everywhere!",
+                choices: [
+                    { text: "Try to override the bulkhead controls", nextNode: "bulkheadOverride" },
+                    { text: "Look for an alternative route through maintenance tunnels", nextNode: "alternativeRoute" }
+                ]
+            },
+            
+            forcePod: {
+                text: "You try to push past security, but Diaz is totally prepared for this. There's a brief struggle, and before you know it, you're restrained. \"I understand your fear,\" Diaz says, looking at you with this mix of sympathy and frustration, \"but we're trying to save everyone here.\" You're assigned to a repair team under guard. So embarrassing!",
+                choices: [
+                    { text: "Cooperate with the repair team - I guess I have no choice", nextNode: "forcedRepair" }
+                ]
+            },
+            
+            engineering: {
+                text: "Engineering is in critical condition. A breach in the hull is being temporarily contained by emergency force fields that flicker ominously. Chief Engineer Patel hands you a repair kit with a grim look. \"We need to reinforce that seal before the field fails completely. It's dangerous, but if that section goes, we lose the whole station. The quantum field generators can only handle so much strain!\"",
+                choices: [
+                    { text: "Work on reinforcing the breach", nextNode: "repairBreach" },
+                    { text: "Suggest an alternative repair approach using less power", nextNode: "alternativeRepair" }
+                ]
+            },
+            
+            pilotPod: {
+                text: "The escape pod wasn't designed for precision piloting - it's basically just supposed to fall to Earth safely. As Earth's atmosphere approaches, your navigation system starts glitching out. You watch helplessly through the viewport as the station continues its descent nearby, burning through the atmosphere in this terrifying light show. Your pod's heat shield indicators are flashing red warnings.",
+                choices: [
+                    { text: "Brace for impact and hope for the best", nextNode: "podCrash" }
+                ]
+            },
+            
+            distressSignal: {
+                text: "You broadcast on all emergency channels as your pod enters the atmosphere. \"Mayday! Mayday! This is Junior Engineer from Orbital Station Alpha!\" The ride is insanely rough, rattling your teeth, but somehow your heat shield holds. Rescue teams track your signal and are waiting when you splash down in the Pacific Ocean. Later, you learn the station broke apart on re-entry with major casualties. The guilt is overwhelming.",
+                choices: [
+                    { text: "Reflect on your survival while others didn't make it", nextNode: "survivalGuilt" }
+                ]
+            },
+            
+            connectData: {
+                text: "Working with Dr. Zhang, you frantically connect cables and reroute power to interface her research with the station's systems. The gravitational counterthrust prototype activates with this weird humming sound, creating a field that pushes against Earth's pull. It's not enough to fully stabilize, but it slows the descent, buying crucial time for repairs and evacuations. Zhang looks at you with newfound respect.",
+                choices: [
+                    { text: "Stay and help with further stabilization efforts", nextNode: "furtherStabilization" },
+                    { text: "Now head for evacuation while we have time", nextNode: "orderedEvacuation" }
+                ]
+            },
+            
+            saveData: {
+                text: "\"The data is worthless if we're all dead,\" you argue. Dr. Zhang looks conflicted but finally nods. \"You're right.\" You both rush to the remaining escape pod with the research data cores. As you launch, you witness the station begin to break up in the upper atmosphere through the viewport. The pod's systems struggle during descent, throwing you both around the cabin like rag dolls.",
+                choices: [
+                    { text: "Focus on safe landing procedures", nextNode: "dataSurvival" }
+                ]
+            },
+            
+            heroReturn: {
+                text: "The command center erupts in cheers as you return, looking like something that crawled out of a fire pit. \"Your quick action saved us all,\" Captain Reyes announces, actually smiling for once. The stabilizers are back online, and the station's orbit is slowly being corrected. Though damaged, the station will survive, and so will its crew. Your classmates from the Academy would never believe this!",
+                choices: [
+                    { text: "Accept your recognition as a hero", nextNode: "heroEnding" }
+                ]
+            },
+            
+            latePower: {
+                text: "You return to find the command center in this state of grim determination. \"We've slowed the descent,\" Captain Reyes informs you, but she doesn't look happy. \"But we can't fully stabilize. We're initiating partial evacuation while a skeleton crew continues repairs.\" You're given a choice to stay or evacuate. The pressure is intense as everyone looks at you.",
+                choices: [
+                    { text: "Volunteer to stay with the repair crew", nextNode: "stayBehind" },
+                    { text: "Take an evacuation pod while I can", nextNode: "orderedEvacuation" }
+                ]
+            },
+            
+            bulkheadOverride: {
+                text: "The override fails as systems continue to deteriorate. The emergency oxygen masks deploy automatically as your section begins to lose pressure. Through the viewport, you watch the curve of Earth growing larger, blue and white against the blackness of space. A strange calm washes over you as you accept your fate. At least the view is amazing...",
+                choices: [
+                    { text: "Spend your final moments in reflection", nextNode: "sacrificeEnding" }
+                ]
+            },
+            
+            alternativeRoute: {
+                text: "You find a maintenance access tunnel that bypasses the sealed bulkhead. Crawling through, you scrape your knees and elbows, but adrenaline keeps you going. You reach the escape pod bay just as the final evacuation order is given over the comms. You secure a spot on the last pod, launching as the station begins to break apart above you in a horrifying spectacle.",
+                choices: [
+                    { text: "Hold on tight during a super rough descent", nextNode: "lastPodEscape" }
+                ]
+            },
+            
+            forcedRepair: {
+                text: "Under supervision, you help repair critical communications systems. Your work allows the station to coordinate with ground control, who provide crucial guidance for emergency procedures. Despite your initial reluctance, you find yourself working harder than ever. The station manages a controlled descent to a remote ocean area, with minimal casualties. Maybe Diaz was right after all.",
+                choices: [
+                    { text: "Reflect on how your forced cooperation saved lives", nextNode: "redemptionEnding" }
+                ]
+            },
+            
+            repairBreach: {
+                text: "The work is dangerous and super precise. Twice the force field fluctuates, nearly exposing you to the vacuum of space, and you feel your ears pop painfully. Finally, the reinforcement holds, and the breach indicators turn from red to yellow. Engineer Patel clasps your shoulder: \"You've bought us the time we needed. The station might just make it through this nightmare.\"",
+                choices: [
+                    { text: "Continue helping with repairs", nextNode: "successfulRepair" }
+                ]
+            },
+            
+            alternativeRepair: {
+                text: "You suggest rerouting power from non-essential systems to strengthen the force fields while applying the reinforcement. \"If we divert power from the residential modules, we can boost the field strength by 42%!\" Patel looks skeptical but agrees to try. Your approach works better than expected, stabilizing the breach with minimal risk. Sometimes being a fresh graduate has advantages!",
+                choices: [
+                    { text: "Share your engineering insight with the team", nextNode: "innovationRecognition" }
+                ]
+            },
+            
+            // Additional nodes needed for proper story flow
+            furtherStabilization: {
+                text: "You stay with Dr. Zhang, fine-tuning the counterthrust field. The gravitational manipulation prototype hums and occasionally sparks as it operates beyond its design parameters. With your combined efforts, the station's descent slows enough for Captain Reyes to announce that most of the crew will survive. Zhang names you as co-researcher in her emergency transmission to Earth.",
+                choices: [
+                    { text: "Continue working until the very end", nextNode: "heroEnding" }
+                ]
+            },
+            
+            orderedEvacuation: {
+                text: "The evacuation is organized but tense. You file into one of the remaining pods with other personnel. As your pod launches, you can see repair crews still working frantically through the viewports. The station grows smaller as you descend toward Earth, trailing debris and venting atmosphere. Your pod lands safely, and you're among the majority who survived.",
+                choices: [
+                    { text: "Look back at what you've been through", nextNode: "lastPodEscape" }
+                ]
+            },
+            
+            stayBehind: {
+                text: "You volunteer to stay with the skeleton crew. Captain Reyes nods with approval. \"We need people like you.\" The work is dangerous as the station continues its partial descent, but your team manages to establish enough control for a semi-controlled splashdown in the Pacific. Rescue ships were waiting, and casualties are minimal. Your bravery will be remembered.",
+                choices: [
+                    { text: "Accept your place among the heroes", nextNode: "redemptionEnding" }
+                ]
+            },
+            
+            successfulRepair: {
+                text: "Your repair work on the breach holds, and the engineering team is able to stabilize other critical systems. The combined efforts of all repair teams give the station enough time to execute emergency protocols. Though the station can't maintain orbit, it makes a controlled descent to a remote ocean area with minimal casualties. Your quick work saved countless lives.",
+                choices: [
+                    { text: "Take pride in your engineering skills", nextNode: "redemptionEnding" }
+                ]
+            },
+            
+            innovationRecognition: {
+                text: "Your unconventional approach spreads quickly through the repair teams as they implement similar power diversions throughout the station. This buys enough time for essential personnel to evacuate and for remaining systems to be stabilized for a controlled descent. Chief Engineer Patel tells everyone about the \"junior engineer who thought outside the box when it mattered most.\"",
+                choices: [
+                    { text: "Accept the recognition with pride", nextNode: "redemptionEnding" }
+                ]
+            },
+            
+            // Endings
+            
+            heroEnding: {
+                text: "ENDING 1: THE HERO\n\nYour quick thinking and bravery saved Orbital Station Alpha and everyone aboard. In the weeks that follow, repairs are completed and the station returns to normal operations. Captain Reyes personally recommends you for a promotion, and you receive the highest civilian honor for space service. The damaged section is even nicknamed after you! More importantly, you've gained the respect of everyone aboard. Your diary entries are going to be EPIC from now on.",
+                choices: [],
+                ending: true
+            },
+            
+            sacrificeEnding: {
+                text: "ENDING 2: THE WITNESS\n\nAs the oxygen thins, you find a strange peace watching Earth grow larger through the viewport. You think about your family, your friends from the Academy, and the short career you had. The beauty of the blue planet fills your vision as the station continues its fatal descent. Though your journey ends here, your last moments are filled with a cosmic perspective few will ever know. Your final thoughts are surprisingly philosophical for a junior engineer.",
+                choices: [],
+                ending: true
+            },
+            
+            redemptionEnding: {
+                text: "ENDING 3: RELUCTANT SAVIOR\n\nThough initially forced to help, your contributions to the repair effort proved crucial. The controlled descent of the station is hailed as a miracle of engineering and human cooperation. In the aftermath, even Security Officer Diaz acknowledges that your skills were essential to the survival of the crew. You realize that sometimes our greatest moments come when we have no choice but to step up. Your next Academy reunion is going to be awesome when you tell this story.",
+                choices: [],
+                ending: true
+            },
+            
+            podCrash: {
+                text: "ENDING 4: SOLO FLIGHT\n\nYour pod's systems fail during the final descent. The impact is rough, throwing you against your restraints hard enough to knock the wind out of you, but somehow you survive. You crawl from the smoking wreckage in a remote wilderness area. It takes three days for rescue teams to locate you. As you recover in the hospital, news reports confirm the station's destruction with significant loss of life. Your solo escape will always be marked by the knowledge of what and who you left behind. The nightmares might never stop.",
+                choices: [],
+                ending: true
+            },
+            
+            survivalGuilt: {
+                text: "ENDING 5: THE SURVIVOR\n\nYou're celebrated in the media as the 'Miracle Survivor' of the orbital disaster. Talk shows want interviews, and suddenly you're famous for all the wrong reasons. But nights are long as you think of colleagues who didn't make it - especially Dr. Zhang's team and their groundbreaking research that was lost forever. You wonder if you could have made a difference had you stayed. Sometimes survival comes with its own punishment, and no amount of celebrity can ease that burden.",
+                choices: [],
+                ending: true
+            },
+            
+            dataSurvival: {
+                text: "ENDING 6: SCIENTIFIC LEGACY\n\nYour pod lands safely with Dr. Zhang and her crucial research intact. While the station and many crew members were lost, the gravitational manipulation breakthroughs revolutionize space travel in the years that follow. A memorial to the station crew stands outside the new research center where Zhang's work continues. She always acknowledges your role in saving the data, insisting you be credited as a co-author on the papers that change humanity's future in space. Your Academy professors would be so impressed!",
+                choices: [],
+                ending: true
+            },
+            
+            lastPodEscape: {
+                text: "ENDING 7: LAST CHANCE\n\nYour pod barely escapes as the station disintegrates in a series of explosions. The descent is absolutely terrifying, with the pod spinning and alarms blaring the whole way down. Somehow, you survive the landing. In the aftermath, you're grouped with the other survivors, a fraction of the original crew. The bond you form with these fellow survivors will last a lifetime, forged in the shared experience of your narrow escape. You all get matching tattoos of the station's coordinates as a memorial to those lost.",
+                choices: [],
+                ending: true
+            }
+        };
+        
+        // Function to display a story node
+        function showNode(nodeId, addToHistory = true) {
+            const node = storyNodes[nodeId];
+            
+            // Display the story text
+            storyText.innerHTML = node.text;
+            
+            // Clear previous choices
+            choicesDiv.innerHTML = '';
+            
+            // Update status based on story progression
+            updateStatus(nodeId);
+            
+            // Add to history if needed
+            if (addToHistory) {
+                gameHistory.push(nodeId);
+                
+                // Enable back button if we have history
+                storyBackBtn.disabled = false;
+            }
+            
+            // Display choices or restart button for endings
+            if (node.ending) {
+                navigationBtn.textContent = 'RESTART MISSION';
+                navigationBtn.style.display = 'block';
+                navigationBtn.onclick = startGame;
+                choicesDiv.style.display = 'none';
+                clearInterval(timerInterval);
+            } else {
+                navigationBtn.style.display = 'none';
+                choicesDiv.style.display = 'flex';
+                
+                // Create buttons for each choice
+                node.choices.forEach(choice => {
+                    const button = document.createElement('button');
+                    button.textContent = choice.text;
+                    button.classList.add('choice-btn');
+                    button.addEventListener('click', () => {
+                        playBeep();
+                        currentNode = choice.nextNode;
+                        showNode(choice.nextNode);
+                    });
+                    choicesDiv.appendChild(button);
+                });
+            }
+        }
+        
+        function updateStatus(nodeId) {
+            // Update status text based on story progression
+            switch(nodeId) {
+                case 'start':
+                    statusText.textContent = 'STATUS: EMERGENCY PROTOCOLS ACTIVE';
+                    break;
+                case 'braveFlames':
+                case 'heroReturn':
+                    statusText.textContent = 'STATUS: STABILIZATION IN PROGRESS';
+                    break;
+                case 'sneakPod':
+                case 'pilotPod':
+                case 'distressSignal':
+                    statusText.textContent = 'STATUS: EVACUATION POD DEPLOYED';
+                    break;
+                case 'bulkheadOverride':
+                    statusText.textContent = 'STATUS: CRITICAL OXYGEN LEVELS';
+                    break;
+                case 'sacrificeEnding':
+                    statusText.textContent = 'STATUS: CONNECTION LOST';
+                    timerDisplay.textContent = 'TIME REMAINING: --:--';
+                    break;
+                default:
+                    // No status update needed
+                    break;
+            }
+        }
+        
+        // Function to start the game
+        function startGame() {
+            timeRemaining = 900; // Reset timer to 15 minutes
+            gameHistory = []; // Clear history
+            currentNode = 'start';
+            storyBackBtn.disabled = true;
+            showNode('start');
+        }
+        
+        // Initialize everything
+        window.onload = function() {
+            showMainMenu();
+        };
+    </script>
+</body>
+</html>
