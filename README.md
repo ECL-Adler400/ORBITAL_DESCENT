@@ -11,10 +11,12 @@ The story is about being on a space station that's falling out of orbit and you 
 ## How to Play
 
 1. Just open the HTML file in any browser
-2. Click START MISSION to begin
-3. Read the story and make choices by clicking buttons
-4. Try to survive!!!!
-5. Play again to find all 7 endings!
+2. Or Click this link -->
+https://htmlpreview.github.io/?https://github.com/ECL-Adler400/ORBITAL_DESCENT/blob/main/indexV.3.html
+4. Click START MISSION to begin
+5. Read the story and make choices by clicking buttons
+6. Try to survive!!!!
+7. Play again to find all 7 endings!
 
 ## Known Bugs 
 
