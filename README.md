@@ -20,7 +20,7 @@ https://htmlpreview.github.io/?https://github.com/ECL-Adler400/ORBITAL_DESCENT/b
 
 ## Known Bugs 
 
-Theres only one bug I know about. The game doesnt show up correctly on mobile phones. The text gets all weird and some buttons might not show up right. To fix it you just need to activate desktop mode in your phone's browser. I tried to fix it but CSS is SO ANNOYING sometimes and I ran out of time before the project was due.
+Theres only one bug I know about. The game doesnt show up correctly on mobile phones. .To fix it just use the Preview site as desktop.
 
 I might fix it later if I have time after finals are over.
 
